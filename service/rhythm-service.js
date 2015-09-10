@@ -33,6 +33,23 @@ RhythmService.prototype = {
     });
   },
 
+  rhythmsWithButtonIndex: function (buttonIndex, callback) {
+    var self = this;
+    var query = new azure.TableQuery().where(azure.TableQuery.int32Filter('buttonIndex', azure.TableUtilities.QueryComparisons.EQUAL, buttonIndex));
+    self.storageClient.queryEntities(self.tableName, query, null, function entitiesQueried(error, result) {
+      if(error) {
+        callback(error);
+      } else {
+        console.log(result);
+        var rhythmModels = [];
+        result.entries.forEach(function (entity) {
+          rhythmModels.push(self.entityToRhythm(entity));
+        });
+        callback(null, rhythmModels);
+      }
+    });
+  },
+
   rhythmToEntity: function(rhythm) {
     var self = this;
     var entity = {
@@ -40,16 +57,11 @@ RhythmService.prototype = {
       RowKey: entityGen.String(rhythm.rowKey)
     };
 
-    if (rhythm.name) {
-      entity.name = entityGen.String(rhythm.name);
-    }
-    if (rhythm.buttonIndex) {
-      entity.buttonIndex = entityGen.String(rhythm.buttonIndex);
-    }
-    if (rhythm.gaugeValue) {
-      entity.gaugeValue = entityGen.String(rhythm.gaugeValue);
-    }
-
+    entity.name = entityGen.String(rhythm.name);
+    entity.buttonIndex = entityGen.Int32(rhythm.buttonIndex);
+    entity.gaugeValue = entityGen.Int32(rhythm.gaugeValue);
+    console.log("entity");
+    console.log(entity);
     return entity;
   },
 
@@ -58,15 +70,9 @@ RhythmService.prototype = {
       rowKey: entity.RowKey._,
     };
 
-    if (entity.name) {
-      rhythmProperties.name = entity.name._;
-    }
-    if (entity.buttonIndex) {
-      rhythmProperties.buttonIndex = entity.buttonIndex._;
-    }
-    if (entity.gaugeValue) {
-      rhythmProperties.gaugeValue = entity.gaugeValue._;
-    }
+    rhythmProperties.name = entity.name._;
+    rhythmProperties.buttonIndex = parseInt(entity.buttonIndex._);
+    rhythmProperties.gaugeValue = parseInt(entity.gaugeValue._);
 
     var rhythm = new Rhythm (rhythmProperties);
     return rhythm;
