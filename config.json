@@ -1,7 +1,0 @@
-{
-    "STORAGE_NAME": "rhythmservice",
-    "STORAGE_KEY": "E0oEAwUmZHypwqJqheUyRcw/+6Xd822IyriIZqlo/h38+RTQOhMTgtH8ws3qHP88MPPL7de+y36KDfGnZB9lRA==",
-    "PARTITION_KEY": "rhythmsPartition",
-    "EVENT_TABLE_NAME": "events",
-    "RHYTHM_TABLE_NAME": "rhythms"
-}
