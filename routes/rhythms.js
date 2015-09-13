@@ -110,7 +110,9 @@ router.get('/:buttonIndex', function(req, res, next) {
       res.send("No rhythm found");
       return;
     }
-    res.send(rhythms[0].gaugeValue.toString());
+    var rhythm = rhythms[0];
+    rhythm.coolDown = 50;
+    res.json(rhythms[0]);
   });
 });
 
