@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var rhythms = require('./routes/rhythms');
+var buttonEvents = require('./routes/button-events');
 
 var app = express();
 var expressValidator = require('express-validator');
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/rhythms', rhythms);
+app.use('/button-events', buttonEvents);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

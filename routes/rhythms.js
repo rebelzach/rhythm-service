@@ -18,10 +18,23 @@ var Rhythm = require('../model/rhythm');
 
 router.get('/', function(req, res, next) {
   console.log("Success");
-  rhythmService.allItems(function(error, results) {
+  rhythmService.allItems(function(error, rhythms) {
     console.log ("Got results");
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(results));
+    if (error) {
+      res.status(400);
+      res.send("query error" + util.inspect(errors));
+      return;
+    }
+    if (!rhythms.length) {
+      res.status(400);
+      res.send("No rhythm found");
+      return;
+    }
+    rhythms.forEach(function (rhythm) {
+      delete rhythm.rowKey;
+      rhythm.coolDown = rhythm.buttonIndex * 20;
+    });
+    res.json(rhythms);
   });
 });
 
