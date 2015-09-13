@@ -11,18 +11,56 @@ var accountKey = nconf.get("STORAGE_KEY");
 var storageClient = azure.createTableService(accountName, accountKey);
 var util = require('util');
 
-router.post('/:buttonIndex', function(req, res, next) {
-  req.checkParams('buttonIndex', 'Invalid buttonIndex').notEmpty().isInt();
+var ButtonEvent = require('../model/button-event');
+
+var EventService = require('../service/button-event-service');
+var eventService = new EventService(storageClient, buttonEventTableName, partitionKey);
+
+router.post('/', function(req, res, next) {
+  console.log (req.body);
+  var buttonLimits = { min: 0, max: 5 };
+  req.checkBody('buttonIndex').isInt(buttonLimits);
+  req.checkBody('eventType').isInt();
 
   var errors = req.validationErrors();
   if (errors) {
-    res.send('There have been validation errors: ' + util.inspect(errors), 400);
+    res.status(400);
+    res.send('There have been validation errors: ' + util.inspect(errors));
     return;
   }
 
-  console.log ("button posted");
+  var newEvent = new ButtonEvent ();
+  newEvent.buttonIndex = req.body.buttonIndex;
+  newEvent.eventType = req.body.eventType;
 
-  res.send("success");
+  eventService.addItem(newEvent, function (error) {
+    console.log ("button posted");
+    res.send("success");
+  });
+});
+
+router.get('/', function(req, res, next) {
+  eventService.allItems(function (error, events) {
+    res.json(events);
+  });
+});
+
+router.post('/reset', function(req, res, next) {
+  eventService.allItems(function(error, results) {
+    if (!error) {
+      console.log("deleting items");
+      results.forEach(function (item) {
+        eventService.deleteItem (item, function(error, results) {
+          if (error) {
+            console.log("error deleting:");
+            console.log(item);
+          }
+        });
+      });
+
+      res.send("Success");
+    }
+  });
 });
 
 module.exports = router;
