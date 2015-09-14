@@ -7,6 +7,7 @@ function CoolDownService(buttonEventService) {
 CoolDownService.prototype = {
   addValuesForRhythms: function(rhythms, callback) {
     var self = this;
+    // TODO: This spins up async operations, need code that coalesces these operations
     rhythms.forEach(function(part, index){
       self.buttonEventService.recentEventsWithButtonIndex(rhythms[index].buttonIndex, function (error, events) {
         if (error) {
@@ -37,8 +38,11 @@ CoolDownService.prototype = {
           // In the "sweet spot"
           rhythms[index].gaugeValue = Math.floor((varianceFromAverage/avgTime)*100);
         }
-        if (index === rhythms.length - 1) {
-          callback(null, rhythms);
+        if (index == rhythms.length - 1) {
+          setTimeout(function() {
+            console.log("done");
+            callback(null, rhythms);
+          }, 1500);
         }
       });
     });
