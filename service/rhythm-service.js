@@ -58,7 +58,7 @@ RhythmService.prototype = {
     };
 
     entity.name = entityGen.String(rhythm.name);
-    entity.buttonIndex = entityGen.Int32(rhythm.buttonIndex);
+    entity.buttonIndex = entityGen.Int32(rhythm.buttonIndex.toInt());
     entity.gaugeValue = entityGen.Int32(rhythm.gaugeValue);
     console.log("entity");
     console.log(entity);

@@ -3,6 +3,7 @@ var uuid = require('node-uuid');
 var entityGen = azure.TableUtilities.entityGenerator;
 var Rhythm = require('../model/rhythm');
 var ButtonEvent = require('../model/button-event');
+var util = require('util');
 
 module.exports = ButtonEventService;
 
@@ -36,12 +37,12 @@ ButtonEventService.prototype = {
 
   recentEventsWithButtonIndex: function (buttonIndex, callback) {
     var self = this;
-    var query = new azure.TableQuery().top(10).where(azure.TableQuery.int32Filter('buttonIndex', azure.TableUtilities.QueryComparisons.EQUAL, buttonIndex));
-    self.storageClient.queryEntities(self.tableName, query, null, function entitiesQueried(error, result) {
+    var query = new azure.TableQuery().where(azure.TableQuery.int32Filter('buttonIndex', azure.TableUtilities.QueryComparisons.EQUAL, buttonIndex));
+    self.storageClient.queryEntities(self.tableName, query, null, function (error, result) {
       if(error) {
         callback(error);
       } else {
-        console.log(result);
+        console.log(util.inspect(result, 5));
         var eventModels = [];
         result.entries.forEach(function (entity) {
           eventModels.push(self.entityToEvent(entity));
@@ -58,8 +59,8 @@ ButtonEventService.prototype = {
       RowKey: entityGen.String(buttonEvent.rowKey)
     };
 
-    entity.buttonIndex = entityGen.Int32(buttonEvent.buttonIndex);
-    entity.eventType = entityGen.Int32(buttonEvent.eventType);
+    entity.buttonIndex = entityGen.Int32(parseInt(buttonEvent.buttonIndex));
+    entity.eventType = entityGen.Int32(parseInt(buttonEvent.eventType));
     entity.eventTime = entityGen.DateTime(buttonEvent.eventTime);
     return entity;
   },
