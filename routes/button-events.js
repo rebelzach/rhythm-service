@@ -18,7 +18,7 @@ var eventService = new EventService(storageClient, buttonEventTableName, partiti
 
 router.post('/', function(req, res, next) {
   console.log (req.body);
-  var buttonLimits = { min: 0, max: 5 };
+  var buttonLimits = { min: 0, max: 4 };
   req.checkBody('buttonIndex').isInt(buttonLimits);
   req.checkBody('eventType').isInt();
 
