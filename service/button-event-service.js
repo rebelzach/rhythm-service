@@ -44,7 +44,7 @@ ButtonEventService.prototype = {
         console.log(result);
         var eventModels = [];
         result.entries.forEach(function (entity) {
-          rhythmModels.push(self.entityToEvent(entity));
+          eventModels.push(self.entityToEvent(entity));
         });
         callback(null, eventModels);
       }
@@ -84,7 +84,9 @@ ButtonEventService.prototype = {
 
   addItem: function(item, callback) {
     var self = this;
-    item.rowKey = uuid();
+    var currentMillis = new Date().getTime();
+    var maxMillis = 8640000000000000; // Its like 273,972 years
+    item.rowKey = (maxMillis - currentMillis).toString();
     var itemDescriptor = self.eventToEntity(item);
     self.storageClient.insertEntity(self.tableName, itemDescriptor, function entityInserted(error) {
       if(error){

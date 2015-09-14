@@ -63,4 +63,23 @@ router.post('/reset', function(req, res, next) {
   });
 });
 
+router.get('/:buttonIndex', function(req, res, next) {
+  req.checkParams('buttonIndex', 'Invalid buttonIndex').notEmpty().isInt();
+
+  var errors = req.validationErrors();
+  if (errors) {
+    res.send('There have been validation errors: ' + util.inspect(errors), 400);
+    return;
+  }
+
+  eventService.recentEventsWithButtonIndex(req.params.buttonIndex, function(error, events) {
+    if (error) {
+      res.status(400);
+      res.send("query error" + util.inspect(errors));
+      return;
+    }
+    res.json(events);
+  });
+});
+
 module.exports = router;

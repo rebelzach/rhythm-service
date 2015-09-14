@@ -38,7 +38,7 @@ router.get('/', function(req, res, next) {
   });
 });
 
-router.get('/reset', function(req, res, next) {
+router.post('/reset', function(req, res, next) {
   rhythmService.allItems(function(error, results) {
     if (!error) {
       console.log("deleting items");
