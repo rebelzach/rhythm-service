@@ -32,7 +32,6 @@ router.get('/', function(req, res, next) {
     }
     rhythms.forEach(function (rhythm) {
       delete rhythm.rowKey;
-      rhythm.coolDown = rhythm.buttonIndex * 20;
     });
     res.json(rhythms);
   });
@@ -124,7 +123,6 @@ router.get('/:buttonIndex', function(req, res, next) {
       return;
     }
     var rhythm = rhythms[0];
-    rhythm.coolDown = 50;
     res.json(rhythms[0]);
   });
 });

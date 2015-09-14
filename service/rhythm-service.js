@@ -2,12 +2,22 @@ var azure = require('azure-storage');
 var uuid = require('node-uuid');
 var entityGen = azure.TableUtilities.entityGenerator;
 var Rhythm = require('../model/rhythm');
+var nconf = require('nconf');
+nconf.env()
+     .file({ file: 'config.json', search: true });
+var buttonEventTableName = nconf.get("BUTTON_EVENT_TABLE_NAME");
+
+var EventService = require('../service/button-event-service');
+var CoolDownCalculator = require('../service/cool-down-service');
 
 module.exports = RhythmService;
 
 function RhythmService(storageClient, tableName, partitionKey) {
   this.storageClient = storageClient;
   this.tableName = tableName;
+  // Creating this service again here is not the right place but I don't know IOC on JS
+  var eventService = new EventService(storageClient, buttonEventTableName, partitionKey);
+  this.coolDownCalculator = new CoolDownCalculator(eventService);
   this.partitionKey = partitionKey;
   this.storageClient.createTableIfNotExists(tableName, function tableCreated(error) {
     if(error) {
@@ -43,7 +53,8 @@ RhythmService.prototype = {
         console.log(result);
         var rhythmModels = [];
         result.entries.forEach(function (entity) {
-          rhythmModels.push(self.entityToRhythm(entity));
+          var rhythm = self.entityToRhythm(entity);
+          rhythmModels.push(rhythm);
         });
         callback(null, rhythmModels);
       }
@@ -59,9 +70,6 @@ RhythmService.prototype = {
 
     entity.name = entityGen.String(rhythm.name);
     entity.buttonIndex = entityGen.Int32(rhythm.buttonIndex.toInt());
-    entity.gaugeValue = entityGen.Int32(rhythm.gaugeValue);
-    console.log("entity");
-    console.log(entity);
     return entity;
   },
 
@@ -72,9 +80,10 @@ RhythmService.prototype = {
 
     rhythmProperties.name = entity.name._;
     rhythmProperties.buttonIndex = parseInt(entity.buttonIndex._);
-    rhythmProperties.gaugeValue = parseInt(entity.gaugeValue._);
 
     var rhythm = new Rhythm (rhythmProperties);
+    rhythm.gaugeValue = this.coolDownCalculator.calculateGaugeForRhythm(rhythm);
+    rhythm.coolDown = this.coolDownCalculator.calculateCoolDownForRhythm(rhythm);
     return rhythm;
   },
 
