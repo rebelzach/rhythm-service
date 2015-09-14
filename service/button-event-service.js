@@ -37,12 +37,11 @@ ButtonEventService.prototype = {
 
   recentEventsWithButtonIndex: function (buttonIndex, callback) {
     var self = this;
-    var query = new azure.TableQuery().top(10).where(azure.TableQuery.int32Filter('buttonIndex', azure.TableUtilities.QueryComparisons.EQUAL, buttonIndex));
+    var query = new azure.TableQuery().top(4).where(azure.TableQuery.int32Filter('buttonIndex', azure.TableUtilities.QueryComparisons.EQUAL, buttonIndex));
     self.storageClient.queryEntities(self.tableName, query, null, function (error, result) {
       if(error) {
         callback(error);
       } else {
-        console.log(util.inspect(result, 5));
         var eventModels = [];
         result.entries.forEach(function (entity) {
           eventModels.push(self.entityToEvent(entity));

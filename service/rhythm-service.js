@@ -38,7 +38,7 @@ RhythmService.prototype = {
         result.entries.forEach(function (entity) {
           rhythmModels.push(self.entityToRhythm(entity));
         });
-        callback(null, rhythmModels);
+        self.coolDownCalculator.addValuesForRhythms(rhythmModels, callback);
       }
     });
   },
@@ -69,7 +69,7 @@ RhythmService.prototype = {
     };
 
     entity.name = entityGen.String(rhythm.name);
-    entity.buttonIndex = entityGen.Int32(rhythm.buttonIndex.toInt());
+    entity.buttonIndex = entityGen.Int32(parseInt(rhythm.buttonIndex));
     return entity;
   },
 
@@ -82,8 +82,6 @@ RhythmService.prototype = {
     rhythmProperties.buttonIndex = parseInt(entity.buttonIndex._);
 
     var rhythm = new Rhythm (rhythmProperties);
-    rhythm.gaugeValue = this.coolDownCalculator.calculateGaugeForRhythm(rhythm);
-    rhythm.coolDown = this.coolDownCalculator.calculateCoolDownForRhythm(rhythm);
     return rhythm;
   },
 
