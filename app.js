@@ -5,9 +5,16 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var routes = require('./routes/index');
+var index = require('./routes/index');
 var rhythms = require('./routes/rhythms');
 var buttonEvents = require('./routes/button-events');
+
+var nconf = require('nconf');
+nconf.env()
+.file({ file: 'config.json', search: true });
+var authUser = nconf.get("RHYTHM_AUTH_USER");
+var authPassword = nconf.get("RHYTHM_AUTH_PASSWORD");
+var basicAuth = require('basic-auth-connect');
 
 var app = express();
 var expressValidator = require('express-validator');
@@ -24,7 +31,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(expressValidator());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(basicAuth(authUser, authPassword));
 
+app.use('/', index);
 app.use('/rhythms', rhythms);
 app.use('/button-events', buttonEvents);
 
