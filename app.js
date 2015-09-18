@@ -68,8 +68,8 @@ app.use(function(err, req, res, next) {
   });
 });
 
-var Journaler = require('./service/git-hub-service.js');
-var journaler = new Journaler();
-journaler.addJournalEntry();
+// var Journaler = require('./service/git-hub-service.js');
+// var journaler = new Journaler();
+// journaler.addJournalEntry();
 
 module.exports = app;
