@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  table
+    tr
+      th Event Time
+      th Button
+      th Type
+    for event in events
+      tr
+        td= event.eventTime
+        td= event.buttonIndex
+        td= event.eventType

@@ -2,4 +2,13 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  ol
+    for rhythm in rhythms
+      li
+        h3= rhythm.name
+        p Health: #{rhythm.gaugeValue}%
+        p Cooldown: #{rhythm.coolDown}%
+        form(action="/" method="post")
+          input(type="hidden", name="buttonIndex", value="#{rhythm.buttonIndex}")
+          input(type="hidden", name="eventType", value="0")
+          input(type="submit", value="I did it!")

@@ -1,51 +1,32 @@
 var express = require('express');
 var router = express.Router();
-var azure = require('azure-storage');
-var nconf = require('nconf');
-nconf.env()
-     .file({ file: 'config.json', search: true });
-var buttonEventTableName = nconf.get("BUTTON_EVENT_TABLE_NAME");
-var partitionKey = nconf.get("PARTITION_KEY");
-var accountName = nconf.get("STORAGE_NAME");
-var accountKey = nconf.get("STORAGE_KEY");
-var storageClient = azure.createTableService(accountName, accountKey);
+
 var util = require('util');
+
+var ButtonQueryHandler = require('../service/button-event-query-handler')
 
 var ButtonEvent = require('../model/button-event');
 
-var EventService = require('../service/button-event-service');
-var eventService = new EventService(storageClient, buttonEventTableName, partitionKey);
-
 router.post('/', function(req, res, next) {
-  console.log (req.body);
-  var buttonLimits = { min: 0, max: 4 };
-  req.checkBody('buttonIndex').isInt(buttonLimits);
-  req.checkBody('eventType').isInt();
-
-  var errors = req.validationErrors();
-  if (errors) {
-    res.status(400);
-    res.send('There have been validation errors: ' + util.inspect(errors));
-    return;
-  }
-
-  var newEvent = new ButtonEvent ();
-  newEvent.buttonIndex = req.body.buttonIndex;
-  newEvent.eventType = req.body.eventType;
-
-  eventService.addItem(newEvent, function (error) {
-    console.log ("button posted");
-    res.send("success");
+  ButtonQueryHandler.postEvent(req, function (error) {
+    if (error) {
+      res.status(400);
+      res.send('There have been validation errors: ' + util.inspect(error));
+    } else {
+      res.send("success");
+    }
   });
 });
 
 router.get('/', function(req, res, next) {
+  var eventService = req.app.get('eventService');
   eventService.allItems(function (error, events) {
-    res.json(events);
+    res.render('events', { title: 'Events', events: events });
   });
 });
 
 router.post('/reset', function(req, res, next) {
+  var eventService = req.app.get('eventService');
   eventService.allItems(function(error, results) {
     if (!error) {
       console.log("deleting items");
@@ -71,7 +52,7 @@ router.get('/:buttonIndex', function(req, res, next) {
     res.send('There have been validation errors: ' + util.inspect(errors), 400);
     return;
   }
-
+  var eventService = req.app.get('eventService');
   eventService.recentEventsWithButtonIndex(req.params.buttonIndex, function(error, events) {
     if (error) {
       res.status(400);

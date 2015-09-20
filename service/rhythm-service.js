@@ -2,22 +2,12 @@ var azure = require('azure-storage');
 var uuid = require('node-uuid');
 var entityGen = azure.TableUtilities.entityGenerator;
 var Rhythm = require('../model/rhythm');
-var nconf = require('nconf');
-nconf.env()
-     .file({ file: 'config.json', search: true });
-var buttonEventTableName = nconf.get("BUTTON_EVENT_TABLE_NAME");
-
-var EventService = require('../service/button-event-service');
-var CoolDownCalculator = require('../service/cool-down-service');
 
 module.exports = RhythmService;
 
 function RhythmService(storageClient, tableName, partitionKey) {
   this.storageClient = storageClient;
   this.tableName = tableName;
-  // Creating this service again here is not the right place but I don't know IOC on JS
-  var eventService = new EventService(storageClient, buttonEventTableName, partitionKey);
-  this.coolDownCalculator = new CoolDownCalculator(eventService);
   this.partitionKey = partitionKey;
   this.storageClient.createTableIfNotExists(tableName, function tableCreated(error) {
     if(error) {
@@ -35,10 +25,14 @@ RhythmService.prototype = {
         callback(error);
       } else {
         var rhythmModels = [];
+
         result.entries.forEach(function (entity) {
           rhythmModels.push(self.entityToRhythm(entity));
         });
-        self.coolDownCalculator.addValuesForRhythms(rhythmModels, callback);
+        rhythmModels.sort(function (a, b) {
+          return a.buttonIndex - b.buttonIndex;
+        });
+        callback(null, rhythmModels);
       }
     });
   },

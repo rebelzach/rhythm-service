@@ -38,6 +38,7 @@ CoolDownService.prototype = {
           // In the "sweet spot"
           rhythms[index].gaugeValue = Math.floor((varianceFromAverage/avgTime)*100);
         }
+        // TODO: hack to return all the info
         if (index == rhythms.length - 1) {
           setTimeout(function() {
             console.log("done");

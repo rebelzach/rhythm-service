@@ -1,23 +1,12 @@
 var express = require('express');
 var router = express.Router();
-var azure = require('azure-storage');
-var nconf = require('nconf');
-nconf.env()
-     .file({ file: 'config.json', search: true });
-var rhythmTableName = nconf.get("RHYTHM_TABLE_NAME");
-var partitionKey = nconf.get("PARTITION_KEY");
-var accountName = nconf.get("STORAGE_NAME");
-var accountKey = nconf.get("STORAGE_KEY");
-var storageClient = azure.createTableService(accountName, accountKey);
-var util = require('util');
 
-var RhythmService = require('../service/rhythm-service');
-var rhythmService = new RhythmService(storageClient, rhythmTableName, partitionKey);
+var util = require('util');
 
 var Rhythm = require('../model/rhythm');
 
 router.get('/', function(req, res, next) {
-  console.log("Success");
+  var rhythmService = req.app.get('rhythmService');
   rhythmService.allItems(function(error, rhythms) {
     console.log ("Got results");
     if (error) {
@@ -30,14 +19,22 @@ router.get('/', function(req, res, next) {
       res.send("No rhythm found");
       return;
     }
-    rhythms.forEach(function (rhythm) {
-      delete rhythm.rowKey;
+    var coolDownCalculator = req.app.get('coolDownCalculator');
+    coolDownCalculator.addValuesForRhythms(rhythms, function (error, cooledRhythms) {
+      if (error) {
+        res.send (error);
+        return;
+      }
+      cooledRhythms.forEach(function (rhythm) {
+        delete rhythm.rowKey;
+      });
+      res.json(cooledRhythms);
     });
-    res.json(rhythms);
   });
 });
 
 router.post('/reset', function(req, res, next) {
+  var rhythmService = req.app.get('rhythmService');
   rhythmService.allItems(function(error, results) {
     if (!error) {
       console.log("deleting items");
@@ -105,7 +102,8 @@ router.get('/:buttonIndex', function(req, res, next) {
     res.send('There have been validation errors: ' + util.inspect(errors), 400);
     return;
   }
-  //req.params.buttonIndex
+
+  var rhythmService = req.app.get('rhythmService');
   rhythmService.rhythmsWithButtonIndex(req.params.buttonIndex, function(error, rhythms) {
     if (error) {
       res.status(400);
@@ -117,6 +115,8 @@ router.get('/:buttonIndex', function(req, res, next) {
       res.send("No rhythm found");
       return;
     }
+    var coolDownCalculator = req.app.get('coolDownCalculator');
+    coolDownCalculator.addValuesForRhythms(rhythms, callback);
     var rhythm = rhythms[0];
     res.json(rhythms[0]);
   });
