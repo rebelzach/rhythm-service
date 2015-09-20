@@ -82,5 +82,67 @@ GitHubJournaler.prototype = {
         }
       }
     );
+  },
+  addActivityEntry: function (info, callback) {
+    var self = this;
+    github.authenticate({ type: "oauth", token: githubToken });
+
+    var date = moment.tz(new Date(), "America/Denver");
+    var formattedTime = date.format("YYYY-MM-DD h:mm a");
+    var filename = "activity-log.csv";
+
+    github.repos.getContent(
+      {
+        user: "rebelzach",
+        repo: "Zach-Starkebaum",
+        path: filename
+      },
+      function(error, res) {
+        if (error) {
+          callback (error);
+          return;
+        }
+        content = new Buffer(res.content, 'base64').toString("ascii");;
+        content += "\n";
+        var infoArray = new Array();
+        infoArray.push(info.activityName);
+        infoArray.push(info.wasEnjoyable);
+        infoArray.push(info.enjoyableRating);
+        infoArray.push(info.didAccomplish);
+        infoArray.push(info.accomplishRating);
+        content += formattedTime + "," + infoArray.join(",");
+        console.log(content);
+        var content64 = new Buffer(content).toString('base64');
+
+        github.repos.updateFile(
+          {
+            user: "rebelzach",
+            repo: "Zach-Starkebaum",
+            path: filename,
+            message: "Activity Event",
+            content: content64,
+            sha: res.sha,
+          },
+          function(error, updateRes) {
+            var message = "I " + info.activityName.toLowerCase() + ". ";
+            if (info.wasEnjoyable) {
+              message += "It was enjoyable";
+            } else {
+              message += "It wasn't enjoyable";
+            }
+            message += " (" + info.enjoyableRating + " out of 10). ";
+            if (info.didAccomplish) {
+              message += "I did feel like I accomplished something";
+            } else {
+              message += "I didn't feel like I accomplished anything";
+            }
+            message += " (" + info.accomplishRating + " out of 10).";
+            self.addEventEntry(message, function (error, addRes) {
+              callback(error);
+            });
+          }
+        );
+      }
+    );
   }
 }

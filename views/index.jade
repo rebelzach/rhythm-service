@@ -12,3 +12,31 @@ block content
           input(type="hidden", name="buttonIndex", value="#{rhythm.buttonIndex}")
           input(type="hidden", name="eventType", value="0")
           input(type="submit", value="I did it!")
+  form(action="/activity" method="post")
+    div
+      h3 Record Activity
+      textarea(name="activityName", rows="2")
+    p
+      label
+        input(type="checkbox", name="wasEnjoyable", value="true")
+        | Enjoyable
+    div
+      em
+        p Always answer this
+      - for (var i = 1; i < 11; ++i) {
+      input(type="radio", name="enjoyableRating", value="#{i}")
+      | #{i}
+      - }
+    p
+      label
+        input(type="checkbox", name="didAccomplish", value="true")
+        | Accomplished something
+    div
+      em
+        p Always answer this
+      - for (var i = 1; i < 11; ++i) {
+      input(type="radio", name="accomplishRating", value="#{i}")
+      | #{i}
+      - }
+    p
+      input(type="submit", value="Record")

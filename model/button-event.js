@@ -9,7 +9,7 @@ function ButtonEvent(eventProperties) {
   this.buttonIndex = 0;
   this.eventTime = new Date();
   if (eventProperties) {
-    for(var propertyName in eventProperties) {
+    for (var propertyName in eventProperties) {
       this[propertyName] = eventProperties[propertyName];
     }
   }

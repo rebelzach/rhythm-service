@@ -9,6 +9,7 @@ var azure = require('azure-storage');
 var index = require('./routes/index');
 var rhythms = require('./routes/rhythms');
 var buttonEvents = require('./routes/button-events');
+var activityLog = require('./routes/activity-events');
 
 var nconf = require('nconf');
 nconf.env()
@@ -62,6 +63,7 @@ app.use(basicAuth(authUser, authPassword));
 app.use('/', index);
 app.use('/rhythms', rhythms);
 app.use('/button-events', buttonEvents);
+app.use('/activity', activityLog);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
