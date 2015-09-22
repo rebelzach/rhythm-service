@@ -37,7 +37,12 @@ ButtonEventService.prototype = {
 
   recentEventsWithButtonIndex: function (buttonIndex, callback) {
     var self = this;
-    var query = new azure.TableQuery().top(4).where(azure.TableQuery.int32Filter('buttonIndex', azure.TableUtilities.QueryComparisons.EQUAL, buttonIndex));
+    var twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    var query = new azure.TableQuery()
+                    .top(60)
+                    .where(azure.TableQuery.int32Filter('buttonIndex', azure.TableUtilities.QueryComparisons.EQUAL, buttonIndex))
+                    .and(azure.TableQuery.dateFilter('eventTime', azure.TableUtilities.QueryComparisons.GREATER_THAN_OR_EQUAL, twoWeeksAgo));
     self.storageClient.queryEntities(self.tableName, query, null, function (error, result) {
       if(error) {
         callback(error);
