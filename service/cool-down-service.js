@@ -73,13 +73,13 @@ function _getEvents(part, index, rhythms)
       console.log(derivatives);
 
       var avgDerivative = (totalDerivative / (durations.length - 1));
-      var gaugeRatio = -(avgDerivative / avgDuration); // invert to make good things positives
+      var gaugeRatio = avgDerivative / avgDuration;
       var uncappedGaugeValue = gaugeRatio * 1000;
 
       var gaugeValue = Math.round(Math.min (100, Math.max(0, uncappedGaugeValue)));
-      var uncappedCoolDown = timeSinceLastEvent/avgDuration;
+      var uncappedCoolDown = (timeSinceLastEvent/avgDuration) * 100;
       var coolDown = Math.round(Math.min (100, Math.max(0, uncappedCoolDown)));
-      console.log({ 'uncappedGaugeValue':uncappedGaugeValue, 'avgDuration': avgDuration, 'avgDerivative': avgDerivative, 'gaugeValue': gaugeValue, 'coolDown':coolDown, 'timeSinceLastEvent':timeSinceLastEvent, 'button': rhythms[index].buttonIndex});
+      console.log({ 'uncappedGaugeValue':uncappedGaugeValue, 'uncappedCoolDown':uncappedCoolDown, 'avgDuration': avgDuration, 'avgDerivative': avgDerivative, 'gaugeValue': gaugeValue, 'coolDown':coolDown, 'timeSinceLastEvent':timeSinceLastEvent, 'button': rhythms[index].buttonIndex});
       rhythms[index].coolDown = coolDown;
       rhythms[index].gaugeValue = gaugeValue;
       fulfill();
